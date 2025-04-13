@@ -8,3 +8,39 @@ app-root {
   flex-direction: column;
   height: 100%;
 }
+
+.app-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+
+  .form-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+
+    label {
+      flex: 0 0 160px;
+      font-weight: 600;
+      line-height: 2.5rem;
+    }
+
+    .form-control-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+
+      input,
+      p-select,
+      p-datePicker {
+        margin-bottom: 0.25rem;
+      }
+
+      .error-container {
+        min-height: 1.25rem;
+        font-size: 0.85rem;
+        color: #f44336;
+      }
+    }
+  }
+}

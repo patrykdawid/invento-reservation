@@ -1,11 +1,14 @@
-<form [formGroup]="form" class="p-fluid">
-    <div class="p-field mb-3">
-      <label for="number" class="p-text-bold">Numer lotu</label>
+<form [formGroup]="form" class="app-form">
+  <div class="form-row">
+    <label for="number">Numer lotu</label>
+    <div class="form-control-wrapper">
       <input id="number" type="text" pInputText formControlName="number" />
     </div>
-  
-    <div class="p-field mb-3">
-      <label for="departureTime" class="p-text-bold">Data i godzina odlotu</label>
+  </div>
+
+  <div class="form-row">
+    <label for="departureTime">Data i godzina odlotu</label>
+    <div class="form-control-wrapper">
       <p-datePicker
         inputId="departureTime"
         formControlName="departureTime"
@@ -17,13 +20,17 @@
         [autoZIndex]="true"
         [baseZIndex]="10000"
       />
-      <small *ngIf="form.get('departureTime')?.invalid && form.get('departureTime')?.touched" class="p-error">
-        Data odlotu jest wymagana
-      </small>
+      <div class="error-container">
+        <small *ngIf="form.get('departureTime')?.invalid && form.get('departureTime')?.touched">
+          Data odlotu jest wymagana
+        </small>
+      </div>
     </div>
-  
-    <div class="p-field mb-3">
-      <label for="arrivalTime" class="p-text-bold">Data i godzina przylotu</label>
+  </div>
+
+  <div class="form-row">
+    <label for="arrivalTime">Data i godzina przylotu</label>
+    <div class="form-control-wrapper">
       <p-datePicker
         inputId="arrivalTime"
         formControlName="arrivalTime"
@@ -35,12 +42,15 @@
         [autoZIndex]="true"
         [baseZIndex]="10000"
       />
-      <small *ngIf="form.get('arrivalTime')?.invalid && form.get('arrivalTime')?.touched" class="p-error">
-        Data przylotu jest wymagana
-      </small>
+      <div class="error-container">
+        <small *ngIf="form.get('arrivalTime')?.invalid && form.get('arrivalTime')?.touched">
+          Data przylotu jest wymagana
+        </small>
+      </div>
     </div>
-  
-    <div *ngIf="form.errors?.['invalidTimeRange']" class="p-error mt-2">
-      Odlot musi być wcześniejszy niż przylot.
-    </div>
+  </div>
+
+  <div *ngIf="form.errors?.['invalidTimeRange']" class="error-container" style="margin-left: 160px">
+    <small>Odlot musi być wcześniejszy niż przylot.</small>
+  </div>
 </form>

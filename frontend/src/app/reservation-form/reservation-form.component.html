@@ -1,25 +1,33 @@
-<form [formGroup]="form" class="p-fluid">
-  <div class="p-field mb-3">
-    <label for="passengerName" class="p-text-bold">Imię i nazwisko pasażera</label>
-    <input id="passengerName" type="text" pInputText formControlName="passengerName" />
-    <div *ngIf="form.get('passengerName')?.invalid && form.get('passengerName')?.touched" class="p-error">
-      Imię i nazwisko jest wymagane
+<form [formGroup]="form" class="app-form">
+  <div class="form-row">
+    <label for="passengerName">Imię i nazwisko pasażera</label>
+    <div class="form-control-wrapper">
+      <input id="passengerName" type="text" pInputText formControlName="passengerName" />
+      <div class="error-container">
+        <small *ngIf="form.get('passengerName')?.invalid && form.get('passengerName')?.touched">
+          Imię i nazwisko jest wymagane
+        </small>
+      </div>
     </div>
   </div>
 
-  <div class="p-field mb-3">
-    <label for="class" class="p-text-bold">Klasa biletu</label>
-    <p-select
-      inputId="class"
-      formControlName="class"
-      [options]="ticketClassOptions"
-      optionLabel="label"
-      optionValue="value"
-      placeholder="Wybierz klasę"
-      [overlayOptions]="{ appendTo: 'body' }"
-    />
-    <div *ngIf="form.get('class')?.invalid && form.get('class')?.touched" class="p-error">
-      Klasa biletu jest wymagana
+  <div class="form-row">
+    <label for="class">Klasa biletu</label>
+    <div class="form-control-wrapper">
+      <p-select
+        inputId="class"
+        formControlName="class"
+        [options]="ticketClassOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Wybierz klasę"
+        [overlayOptions]="{ appendTo: 'body' }"
+      />
+      <div class="error-container">
+        <small *ngIf="form.get('class')?.invalid && form.get('class')?.touched">
+          Klasa biletu jest wymagana
+        </small>
+      </div>
     </div>
   </div>
 </form>
