@@ -1,0 +1,247 @@
+<!-- <p-toolbar styleClass="mb-6">
+    <ng-template #start>
+    </ng-template>
+
+    <ng-template #end>
+    </ng-template>
+</p-toolbar> -->
+
+<div class="table-wrapper">
+    <p-table #dt
+        [tableStyle]="{ 'min-width': '100rem' }"
+        stripedRows
+        [scrollable]="true"
+        scrollDirection="horizontal"
+        scrollHeight="flex"
+        [value]="flights"
+        [paginator]="true" [rowsPerPageOptions]="[5, 10, 20, pageSize]"
+        [rows]="pageSize"
+        [loading]="loading"
+        [dataKey]="flightIdKey"
+        [expandedRowKeys]="expandedRows"
+        (onRowExpand)="onRowExpand($event)"
+        (onRowCollapse)="onRowCollapse($event)"
+        [rowExpandMode]="'multiple'"
+        [sortField]="flightNumberKey" [sortOrder]="-1" 
+        (sortFunction)="customSort($event)" [customSort]="true"
+        [globalFilterFields]="[flightNumberKey, flightDepartureTimeKey, flightArrivalTimeKey, flightReservationPassengersKey, flightReservationClassKey]"
+    >
+        <ng-template #caption>
+            <div class="table-caption-wrapper">
+                <!-- <p-button label="dodaj lot" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="" /> TODO: nie było wymagane, dorobić w drugiej wersji -->
+                <p-iconfield iconPosition="left">
+                    <p-inputicon>
+                        <i class="pi pi-search"></i>
+                    </p-inputicon>
+                    <input #globalFilterInput
+                        pInputText
+                        type="text"
+                        (input)="dt.filterGlobal(globalFilterInput.value, 'contains')"
+                        placeholder="Szukaj wszędzie"
+                    />
+                </p-iconfield>
+            </div>
+        </ng-template>
+        <ng-template #header>
+            <tr>
+                <th style="width: 3rem" alignFrozen="left" pFrozenColumn></th>
+                <th [pSortableColumn]="flightNumberKey">Numer lotu <p-sortIcon [field]="flightNumberKey" /></th>
+                <th [pSortableColumn]="flightDepartureTimeKey">Odlot <p-sortIcon [field]="flightDepartureTimeKey" /></th>
+                <th [pSortableColumn]="flightArrivalTimeKey">Przylot <p-sortIcon [field]="flightArrivalTimeKey" /></th>
+                <th style="width: 5rem" alignFrozen="right" pFrozenColumn></th>
+            </tr>
+            <tr>
+                <th style="width: 3rem" alignFrozen="left" pFrozenColumn></th>
+                <th>
+                    <p-columnFilter
+                        type="text"
+                        [field]="flightNumberKey"
+                        placeholder="Numer lotu zawiera"
+                    >
+                    </p-columnFilter>
+                </th>
+                <th>
+                    <!-- <p-columnFilter
+                        [field]="flightDepartureTimeKey"
+                        dataType="date"
+                        display="menu"
+                        [showMatchModes]="true"
+                        [showAddButton]="false"
+                        [matchMode]="defaultDateFilterMatchMode"
+                        [matchModeOptions]="dateMatchModes"
+                        [showOperator]="false"
+                    >
+                        <ng-template pTemplate="filterElement" let-value>
+                            <p-datePicker
+                                [ngModel]="value"
+                                (ngModelChange)="applyCustomDateFilter($event, flightDepartureTimeKey)"
+                                [showIcon]="true"
+                                [selectionMode]="getDatePickerMode(flightDepartureTimeKey)"
+                            ></p-datePicker>
+                        </ng-template>
+                    </p-columnFilter> -->
+                </th>
+                <th>
+                    <!-- <p-columnFilter
+                        [field]="flightArrivalTimeKey"
+                        dataType="date"
+                        display="menu"
+                        [showMatchModes]="true"
+                        [showAddButton]="false"
+                        [matchMode]="defaultDateFilterMatchMode"
+                        [matchModeOptions]="dateMatchModes"
+                        [showOperator]="false"
+                    >
+                        <ng-template pTemplate="filterElement" let-value>
+                            <p-datePicker
+                                [ngModel]="value"
+                                (ngModelChange)="applyCustomDateFilter($event, flightArrivalTimeKey)"
+                                [showIcon]="true"
+                                [selectionMode]="getDatePickerMode(flightArrivalTimeKey)"
+                            ></p-datePicker>
+                        </ng-template>
+                    </p-columnFilter> -->
+                </th>
+                <th style="width: 5rem" alignFrozen="right" pFrozenColumn></th>
+            </tr>
+        </ng-template>
+
+    <ng-template #body let-flight>
+        <tr>
+            <td>
+                <p-button type="button" pRipple [pRowToggler]="flight" [text]="true" [rounded]="true" [plain]="true" [icon]="expandedRows[flight.id] ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" />
+            </td>
+            <td>{{ flight.number }}</td>
+            <td>{{ flight.departureTime | date: 'full' }}</td>
+            <td>{{ flight.arrivalTime | date: 'full' }}</td>
+            <td class="action-buttons">
+                <p-button icon="pi pi-plus" (click)="showReservationDialog(undefined, flight)" severity="secondary" rounded />
+                <p-button icon="pi pi-pencil" (click)="showFlightDialog(flight)" severity="secondary" rounded />
+            </td>
+        </tr>
+    </ng-template>
+
+    <ng-template #expandedrow let-flight>
+        <tr>
+            <td [attr.colspan]="4">
+                <div class="expanded-row-wrapper">
+                    <ng-container *ngIf="flight.reservations.length > 0; else noReservations">
+                        <p-table
+                            stripedRows
+                            [value]="flight.reservations"
+                            [dataKey]="reservationIdKey"
+                            [sortField]="reservationPassengerNameKey" [sortOrder]="1" 
+                        >
+                        <ng-template #header>
+                            <tr>
+                                <th [pSortableColumn]="reservationPassengerNameKey">Imię i nazwisko pasażera <p-sortIcon [field]="reservationPassengerNameKey" /></th>
+                                <th [pSortableColumn]="reservationClassKey">Klasa biletu <p-sortIcon [field]="reservationClassKey" /></th>
+                                <th style="width: 5rem" alignFrozen="right"></th>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <p-columnFilter
+                                        type="text"
+                                        matchMode="contains"
+                                        [field]="reservationPassengerNameKey"
+                                        placeholder="Imię i nazwisko pasażera zawiera"
+                                    ></p-columnFilter>
+                                </th>
+                                <th>
+                                    <!-- <p-columnFilter
+                                        type="dropdown"
+                                        [field]="reservationClassKey"
+                                        [showOperator]="false"
+                                        [display]="'menu'"
+                                        [showMatchModes]="false"
+                                        [options]="ticketClassOptions"
+                                        optionLabel="label"
+                                        optionValue="value"
+                                        placeholder="Wybierz klasę biletu"
+                                    >
+                                    </p-columnFilter> -->
+                                    <!-- <p-columnFilter [field]="reservationClassKey" matchMode="equals" [showMenu]="false">
+                                        <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                                            <p-select
+                                                [(ngModel)]="value"
+                                                [options]="ticketClassOptions"
+                                                (onChange)="filter($event.value)"
+                                                placeholder="Wybierz klasę biletu"
+                                                [showClear]="true"
+                                            >
+                                                <ng-template let-option pTemplate="item">
+                                                    <p-tag [value]="option.value" [severity]="getTicketClassSeverity(option.value)" />
+                                                </ng-template>
+                                            </p-select>
+                                        </ng-template>
+                                    </p-columnFilter> -->
+                                </th>
+                            </tr>
+                        </ng-template>
+                        <ng-template #body let-reservation>
+                            <tr>
+                                <td>{{ reservation.passengerName }}</td>
+                                <td>
+                                    <p-tag
+                                        [value]="getTicketClassLabel(reservation.class)"
+                                        [severity]="getTicketClassSeverity(reservation.class)"
+                                    ></p-tag>
+                                </td>  
+                                <td class="action-buttons">
+                                    <p-button icon="pi pi-pencil" (click)="showReservationDialog(reservation, undefined)" severity="secondary" rounded />
+                                    <p-button icon="pi pi-trash" (click)="deleteReservation(reservation)" severity="secondary" rounded />
+                                </td>                    
+                            </tr>
+                        </ng-template>
+                        </p-table>
+                    </ng-container>
+            
+                    <ng-template #noReservations>
+                        <p>Brak rezerwacji</p>
+                        <p-button label="Złóż nową"
+                                icon="pi pi-plus"
+                                severity="secondary"
+                                class="mr-2"
+                                (onClick)="showReservationDialog(undefined, flight)" />
+                    </ng-template>
+                </div>
+            </td>
+        </tr>
+    </ng-template>  
+    </p-table>
+</div>
+
+<p-dialog [(visible)]="flightDialog" [style]="{ width: '450px' }" header="Szczegóły lotu" [modal]="true">
+    <ng-template #content>
+        <ng-container *ngIf="flightDialog && !!flightItem">
+            <app-flight-form
+                [flight]="flightItem"
+                (saveFlight)="onFlightSaved($event)"
+            />          
+        </ng-container>
+    </ng-template>
+
+    <ng-template #footer>
+        <p-button label="Anuluj" icon="pi pi-times" text (click)="hideFlightDialog()" />
+        <p-button label="Zapisz" icon="pi pi-check" (click)="flightForm.save()" />
+    </ng-template>
+</p-dialog>
+
+<p-dialog [(visible)]="reservationDialog" [style]="{ width: '450px' }" header="{{ (reservationItem?.id) ? 'Szczegóły rezerwacji' : 'Nowa rezerwacja' }}" [modal]="true">
+    <ng-template #content>
+        <ng-container *ngIf="reservationDialog && !!reservationItem">
+            <app-reservation-form
+                [reservation]="reservationItem"
+                (saveReservation)="onReservationSaved($event)"
+            />
+        </ng-container>
+    </ng-template>
+
+    <ng-template #footer>
+        <p-button label="Anuluj" icon="pi pi-times" text (click)="hideReservationDialog()" />
+        <p-button label="Zapisz" icon="pi pi-check" (click)="reservationForm.save()" />
+    </ng-template>
+</p-dialog>
+
+<p-confirmDialog></p-confirmDialog>
+<p-toast></p-toast>

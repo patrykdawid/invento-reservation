@@ -9,26 +9,48 @@ namespace backend.Controllers;
 [Route("api/[controller]")]
 public class FlightsController : ControllerBase
 {
+	private readonly IReservationRepository _reservations;
 	private readonly IFlightRepository _flights;
 	private readonly IMapper _mapper;
 
-	public FlightsController(IFlightRepository flights, IMapper mapper)
+	public FlightsController(IReservationRepository reservations, IFlightRepository flights, IMapper mapper)
 	{
+		_reservations = reservations;
 		_flights = flights;
 		_mapper = mapper;
 	}
 
 	[HttpGet]
-	[ProducesResponseType(typeof(IEnumerable<FlightDto>), StatusCodes.Status200OK)]
-	public async Task<ActionResult<IEnumerable<FlightDto>>> GetAll()
+	[ProducesResponseType(typeof(PagedResult<FlightDto>), StatusCodes.Status200OK)]
+	public async Task<ActionResult<PagedResult<FlightDto>>> Get([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50, [FromQuery] bool withReservations = false)
 	{
-		var flights = _flights.GetAll()
+		var all = _flights.GetAll().ToList();
+		var totalCount = all.Count;
+
+		var items = all
+			.Skip((pageNumber - 1) * pageSize)
+			.Take(pageSize)
 			.Select(_mapper.Map<FlightDto>)
 			.ToList();
 
+		if (withReservations) {
+			var allReservations = _reservations.GetAll().ToList();
+			foreach (var flight in items)
+			{
+				var reservations = allReservations.Where(r => r.FlightId == flight.Id).ToList();
+				flight.Reservations = reservations.Select(_mapper.Map<ReservationDto>).ToList();
+			}
+		}
+
 		await Task.CompletedTask;
 
-		return Ok(flights);
+		var result = new PagedResult<FlightDto>
+		{
+			Items = items,
+			TotalCount = totalCount,
+		};
+
+		return Ok(result);
 	}
 
 	[HttpGet("{id}")]

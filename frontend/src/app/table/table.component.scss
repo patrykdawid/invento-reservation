@@ -1,0 +1,29 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.table-wrapper {
+    flex: 1;
+    overflow: hidden;
+}
+
+::ng-deep .p-datatable-caption {
+    padding: 0.5rem 1rem;
+}
+  
+.table-caption-wrapper {
+    display: flex;
+    justify-content: flex-end;//space-between
+}
+
+.expanded-row-wrapper {
+    padding: 1rem;
+    padding-left: 3rem;
+}
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+}

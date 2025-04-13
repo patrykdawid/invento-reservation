@@ -21,16 +21,25 @@ public class ReservationsController : ControllerBase
 	}
 
 	[HttpGet]
-	[ProducesResponseType(typeof(IEnumerable<ReservationDto>), StatusCodes.Status200OK)]
-	public async Task<ActionResult<IEnumerable<ReservationDto>>> Get([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
+	[ProducesResponseType(typeof(PagedResult<ReservationDto>), StatusCodes.Status200OK)]
+	public async Task<ActionResult<PagedResult<ReservationDto>>> Get([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
 	{
-		var result = _reservations.GetAll()
+		var all = _reservations.GetAll().ToList();
+		var totalCount = all.Count;
+
+		var items = all
 			.Skip((pageNumber - 1) * pageSize)
 			.Take(pageSize)
 			.Select(_mapper.Map<ReservationDto>)
 			.ToList();
 
 		await Task.CompletedTask;
+
+		var result = new PagedResult<ReservationDto>
+		{
+			Items = items,
+			TotalCount = totalCount
+		};
 
 		return Ok(result);
 	}

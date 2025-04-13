@@ -1,0 +1,46 @@
+<form [formGroup]="form" class="p-fluid">
+    <div class="p-field mb-3">
+      <label for="number" class="p-text-bold">Numer lotu</label>
+      <input id="number" type="text" pInputText formControlName="number" />
+    </div>
+  
+    <div class="p-field mb-3">
+      <label for="departureTime" class="p-text-bold">Data i godzina odlotu</label>
+      <p-datePicker
+        inputId="departureTime"
+        formControlName="departureTime"
+        [showIcon]="true"
+        [showTime]="true"
+        hourFormat="24"
+        dateFormat="yy-mm-dd"
+        appendTo="body"
+        [autoZIndex]="true"
+        [baseZIndex]="10000"
+      />
+      <small *ngIf="form.get('departureTime')?.invalid && form.get('departureTime')?.touched" class="p-error">
+        Data odlotu jest wymagana
+      </small>
+    </div>
+  
+    <div class="p-field mb-3">
+      <label for="arrivalTime" class="p-text-bold">Data i godzina przylotu</label>
+      <p-datePicker
+        inputId="arrivalTime"
+        formControlName="arrivalTime"
+        [showIcon]="true"
+        [showTime]="true"
+        hourFormat="24"
+        dateFormat="yy-mm-dd"
+        appendTo="body"
+        [autoZIndex]="true"
+        [baseZIndex]="10000"
+      />
+      <small *ngIf="form.get('arrivalTime')?.invalid && form.get('arrivalTime')?.touched" class="p-error">
+        Data przylotu jest wymagana
+      </small>
+    </div>
+  
+    <div *ngIf="form.errors?.['invalidTimeRange']" class="p-error mt-2">
+      Odlot musi być wcześniejszy niż przylot.
+    </div>
+</form>

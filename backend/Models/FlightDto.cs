@@ -5,4 +5,5 @@ public class FlightDto
 	public string Number { get; set; } = string.Empty;
 	public DateTimeOffset DepartureTime { get; set; }
 	public DateTimeOffset ArrivalTime { get; set; }
+	public IList<ReservationDto>? Reservations { get; set; }
 }
