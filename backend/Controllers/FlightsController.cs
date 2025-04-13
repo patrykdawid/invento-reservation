@@ -57,4 +57,28 @@ public class FlightsController : ControllerBase
 
 		return Ok(dto);
 	}
+
+	[HttpPut("{id}")]
+	[ProducesResponseType(typeof(FlightDto), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	public async Task<IActionResult> Update(Guid id, [FromBody] FlightDto dto)
+	{
+		var existing = _flights.Find(id);
+		if (existing == null)
+			return NotFound();
+
+		if (dto.DepartureTime >= dto.ArrivalTime)
+			return BadRequest("Odlot musi być wcześniejszy niż przylot.");
+
+		_mapper.Map(dto, existing);
+		_flights.Update(existing);
+		_flights.Save();
+
+		var resultDto = _mapper.Map<FlightDto>(existing);
+
+		await Task.CompletedTask;
+
+		return Ok(resultDto);
+	}
 }

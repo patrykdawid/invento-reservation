@@ -9,6 +9,7 @@ namespace backend.Models.Mapping
 			CreateMap<Flight, Flight>();
 
 			CreateMap<Flight, FlightDto>();
+			CreateMap<FlightDto, Flight>();
 		}
 	}
 }

@@ -14,6 +14,7 @@
         scrollDirection="horizontal"
         scrollHeight="flex"
         [value]="flights"
+        [rowTrackBy]="trackByFlight"
         [paginator]="true" [rowsPerPageOptions]="[5, 10, 20, pageSize]"
         [rows]="pageSize"
         [loading]="loading"
@@ -129,6 +130,7 @@
                         <p-table
                             stripedRows
                             [value]="flight.reservations"
+                            [rowTrackBy]="trackByReservation"
                             [dataKey]="reservationIdKey"
                             [sortField]="reservationPassengerNameKey" [sortOrder]="1" 
                         >

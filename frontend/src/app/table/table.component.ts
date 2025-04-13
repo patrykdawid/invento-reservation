@@ -19,6 +19,7 @@ import { FlightFormComponent } from '../flight-form/flight-form.component';
 import { Flight } from "../model/flight.model";
 import { Reservation, TICKET_CLASS_LABELS, TICKET_CLASS_SEVERITY, TicketClass } from "../model/reservation.model";
 import { ReservationFormComponent } from '../reservation-form/reservation-form.component';
+import { FlightService } from '../service/flight.service';
 import { ReservationService } from '../service/reservation.service';
 import { nameof } from '../utils/nameof';
 
@@ -62,7 +63,7 @@ export class TableComponent implements OnInit, OnDestroy {
   flightItem: Flight = undefined!;
 
   reservationDialog: boolean = false;
-  reservationItem: Reservation = undefined!;
+  reservationItem: Reservation | undefined = undefined!;
 
   pageSize = 50;
   flights: Flight[] = [];
@@ -99,6 +100,7 @@ export class TableComponent implements OnInit, OnDestroy {
 
   constructor(
       private reservationService: ReservationService,
+      private flightService: FlightService,
       private messageService: MessageService,
       private confirmationService: ConfirmationService,
   ) {}
@@ -130,6 +132,14 @@ export class TableComponent implements OnInit, OnDestroy {
           this.loading = false;
         }
       });
+  }
+
+  trackByFlight(index: number, item: Flight): string {
+    return item.id;
+  }
+
+  trackByReservation(index: number, reservation: Reservation): string {
+    return reservation.id;
   }
 
   customSort(event: SortEvent) {
@@ -232,14 +242,28 @@ export class TableComponent implements OnInit, OnDestroy {
   }
 
   onFlightSaved(updatedFlight: Flight): void {
-    //TODO: implement save flight logic
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Zapisano lot',
-      detail: `Numer: ${updatedFlight.number}, Odlot: ${updatedFlight.departureTime}, Przylot: ${updatedFlight.arrivalTime}`
-    });
-  
-    this.flightDialog = false;
+    this.flightService.updateFlight(updatedFlight)
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe({
+        next: (res) => {
+          this.updateFlightLocally(res);
+    
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Zapisano lot',
+            detail: `Numer: ${res.number}, Odlot: ${res.departureTime}, Przylot: ${res.arrivalTime}`
+          });
+    
+          this.flightDialog = false;
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Błąd',
+            detail: 'Nie udało się zaktualizować lotu'
+          });
+        }
+      });
   }
 
   showReservationDialog(reservation?: Reservation, flight?: Flight) {
@@ -248,7 +272,7 @@ export class TableComponent implements OnInit, OnDestroy {
     } else if (flight){
         this.reservationItem = <Reservation>{
             flightId: flight.id,
-        };//TODO
+        };
     } else {
       throw new Error('Reservation or flight must be provided to show reservation dialog.');
     }
@@ -352,6 +376,15 @@ export class TableComponent implements OnInit, OnDestroy {
     if (!flight) return;
   
     flight.reservations = [...(flight.reservations ?? []), reservation];
+  }
+
+  private updateFlightLocally(updatedFlight: Flight): void {
+    const flight = this.flights.find(f => f.id === updatedFlight.id);
+    if (!flight) return;
+  
+    // flight.number = updatedFlight.number; // Uncomment if you want to update the flight number
+    flight.departureTime = updatedFlight.departureTime;
+    flight.arrivalTime = updatedFlight.arrivalTime;
   }
 
   private sortTableData(event: SortEvent) {
