@@ -14,7 +14,7 @@ import { Table, TableModule, TableRowExpandEvent } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
-import { Subject, takeUntil } from 'rxjs';
+import { Observable, Subject, takeUntil } from 'rxjs';
 import { FlightFormComponent } from '../flight-form/flight-form.component';
 import { Flight } from "../model/flight.model";
 import { Reservation, TICKET_CLASS_LABELS, TICKET_CLASS_SEVERITY, TicketClass } from "../model/reservation.model";
@@ -260,14 +260,42 @@ export class TableComponent implements OnInit, OnDestroy {
   }
 
   onReservationSaved(reservation: Reservation): void {
-    //TODO: implement save reservation logic
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Zapisano rezerwację',
-      detail: `Pasażer: ${reservation.passengerName}, Klasa: ${reservation.class}`
-    });
+    const isExisting = reservation.id !== undefined && reservation.id !== null;
   
-    this.reservationDialog = false;
+    const request$: Observable<Reservation> = isExisting
+    ? this.reservationService.updateReservation(reservation)
+    : this.reservationService.createReservation(reservation);
+  
+    request$
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe({
+        next: (res) => {
+          if (isExisting) {
+            this.updateReservationLocally(res);
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Zaktualizowano rezerwację',
+              detail: `Pasażer: ${res.passengerName}`,
+            });
+          } else {
+            this.addReservationLocally(res);
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Dodano rezerwację',
+              detail: `Pasażer: ${res.passengerName}`,
+            });
+          }
+      
+          this.reservationDialog = false;
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Błąd',
+            detail: 'Nie udało się zapisać rezerwacji',
+          });
+        }
+      });
   }
 
   deleteReservation(reservation: Reservation) {
@@ -308,6 +336,22 @@ export class TableComponent implements OnInit, OnDestroy {
     if (!flight) return;
   
     flight.reservations = flight.reservations!.filter(r => r.id !== reservation.id);
+  }
+
+  private updateReservationLocally(reservation: Reservation): void {
+    const flight = this.flights.find(f => f.id === reservation.flightId);
+    if (!flight) return;
+
+    flight.reservations = flight.reservations!.map(r =>
+      r.id === reservation.id ? { ...reservation } : r
+    );
+  }  
+
+  private addReservationLocally(reservation: Reservation): void {
+    const flight = this.flights.find(f => f.id === reservation.flightId);
+    if (!flight) return;
+  
+    flight.reservations = [...(flight.reservations ?? []), reservation];
   }
 
   private sortTableData(event: SortEvent) {

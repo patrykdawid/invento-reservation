@@ -38,8 +38,6 @@ export class ReservationFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      id: [this.reservation?.id ?? crypto.randomUUID()],
-      flightId: [this.reservation?.flightId ?? '', Validators.required],
       passengerName: [this.reservation?.passengerName ?? '', Validators.required],
       class: [this.reservation?.class ?? null, Validators.required]
     });
@@ -47,7 +45,12 @@ export class ReservationFormComponent implements OnInit {
 
   save(): void {
     if (this.form.valid) {
-      this.saveReservation.emit(this.form.value);
+      const updated: Reservation = {
+        ...this.reservation,
+        ...this.form.value,
+      };
+
+      this.saveReservation.emit(updated);
     } else {
       this.form.markAllAsTouched();
     }

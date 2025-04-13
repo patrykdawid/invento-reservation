@@ -84,7 +84,7 @@ public class ReservationsController : ControllerBase
 	}
 
 	[HttpPut("{id}")]
-	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(typeof(ReservationDto), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public async Task<IActionResult> Update(Guid id, [FromBody] ReservationDto dto)
@@ -103,9 +103,11 @@ public class ReservationsController : ControllerBase
 		_reservations.Update(existing);
 		_reservations.Save();
 
+		var resultDto = _mapper.Map<ReservationDto>(existing);
+
 		await Task.CompletedTask;
 
-		return NoContent();
+		return Ok(resultDto);
 	}
 
 	[HttpDelete("{id}")]
