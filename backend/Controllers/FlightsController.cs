@@ -21,15 +21,10 @@ public class FlightsController : ControllerBase
 	}
 
 	[HttpGet]
-	[ProducesResponseType(typeof(PagedResult<FlightDto>), StatusCodes.Status200OK)]
-	public async Task<ActionResult<PagedResult<FlightDto>>> Get([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50, [FromQuery] bool withReservations = false)
+	[ProducesResponseType(typeof(IEnumerable<FlightDto>), StatusCodes.Status200OK)]
+	public async Task<ActionResult<IEnumerable<FlightDto>>> Get([FromQuery] bool withReservations = false)
 	{
-		var all = _flights.GetAll().ToList();
-		var totalCount = all.Count;
-
-		var items = all
-			.Skip((pageNumber - 1) * pageSize)
-			.Take(pageSize)
+		var items = _flights.GetAll()
 			.Select(_mapper.Map<FlightDto>)
 			.ToList();
 
@@ -44,13 +39,7 @@ public class FlightsController : ControllerBase
 
 		await Task.CompletedTask;
 
-		var result = new PagedResult<FlightDto>
-		{
-			Items = items,
-			TotalCount = totalCount,
-		};
-
-		return Ok(result);
+		return Ok(items);
 	}
 
 	[HttpGet("{id}")]

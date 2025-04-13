@@ -15,13 +15,12 @@ import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
 import { Subject, takeUntil } from 'rxjs';
+import { FlightFormComponent } from '../flight-form/flight-form.component';
 import { Flight } from "../model/flight.model";
-import { PagedResult } from "../model/paged-result.model";
 import { Reservation, TICKET_CLASS_LABELS, TICKET_CLASS_SEVERITY, TicketClass } from "../model/reservation.model";
+import { ReservationFormComponent } from '../reservation-form/reservation-form.component';
 import { ReservationService } from '../service/reservation.service';
 import { nameof } from '../utils/nameof';
-import { FlightFormComponent } from '../flight-form/flight-form.component';
-import { ReservationFormComponent } from '../reservation-form/reservation-form.component';
 
 @Component({
   selector: 'app-table',
@@ -105,12 +104,12 @@ export class TableComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.reservationService.getFlightsWithReservations(1, 2147483647)//TODO: remove hardcoded page size
+    this.reservationService.getFlightsWithReservations()
       .pipe(takeUntil(this.destroyed$))
       .subscribe({
-        next: (data : PagedResult<Flight>) => {
-          this.initialValue = [...data.items];
-          this.flights = data.items.map(f => ({
+        next: (data : Flight[]) => {
+          this.initialValue = [...data];
+          this.flights = data.map(f => (<Flight>{
             ...f,
             reservationPassengers: f.reservations?.map(r => r.passengerName).join(', ') ?? '',
             reservationClasses: Array.from(new Set(f.reservations?.map(r => r.class))).join(', ') ?? ''
