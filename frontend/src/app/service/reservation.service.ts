@@ -10,4 +10,8 @@ export class ReservationService {
     getFlightsWithReservations(): Observable<Flight[]> {
         return this.http.get<Flight[]>(`/api/flights?withReservations=true`);
     }
+
+    delete(id: string): Observable<void> {
+        return this.http.delete<void>(`/api/reservations/${id}`);
+    }
 }

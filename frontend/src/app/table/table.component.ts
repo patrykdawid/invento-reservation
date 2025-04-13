@@ -104,6 +104,15 @@ export class TableComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.loadData();
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed$.next();
+    this.destroyed$.complete();
+  }
+
+  loadData() {
     this.reservationService.getFlightsWithReservations()
       .pipe(takeUntil(this.destroyed$))
       .subscribe({
@@ -121,11 +130,6 @@ export class TableComponent implements OnInit, OnDestroy {
           this.loading = false;
         }
       });
-  }
-
-  ngOnDestroy(): void {
-    this.destroyed$.next();
-    this.destroyed$.complete();
   }
 
   customSort(event: SortEvent) {
@@ -272,15 +276,38 @@ export class TableComponent implements OnInit, OnDestroy {
           header: 'Wymagane potwierdzenie',
           icon: 'pi pi-exclamation-triangle',
           accept: () => {
-            //TODO: implement delete reservation logic
-            this.messageService.add({
-                severity: 'success',
-                summary: 'Sukces',
-                detail: 'Rezerwacja usunięta',
-                life: 3000,
-            });
-          }
+            this.reservationService.delete(reservation.id)
+              .pipe(takeUntil(this.destroyed$))
+              .subscribe({
+                next: () => {
+                  this.removeReservationLocally(reservation);
+
+                  this.messageService.add({
+                      severity: 'success',
+                      summary: 'Sukces',
+                      detail: 'Rezerwacja usunięta',
+                      life: 3000,
+                  });
+
+                },
+                error: () => {
+                  this.messageService.add({
+                      severity: 'error',
+                      summary: 'Błąd',
+                      detail: 'Nie można usunąć rezerwacji',
+                      life: 3000,
+                  });
+                }
+              });
+          },
       });
+  }
+
+  private removeReservationLocally(reservation: Reservation): void {
+    const flight = this.flights.find(f => f.id === reservation.flightId);
+    if (!flight) return;
+  
+    flight.reservations = flight.reservations!.filter(r => r.id !== reservation.id);
   }
 
   private sortTableData(event: SortEvent) {
