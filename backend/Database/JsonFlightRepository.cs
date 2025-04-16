@@ -12,6 +12,7 @@ public class JsonFlightRepository : IFlightRepository
 	private static readonly object FileLock = new();
 
 	private readonly IMapper _mapper;
+	private readonly ILogger<JsonFlightRepository> _logger;
 
 	private static readonly JsonSerializerOptions Options = new()
 	{
@@ -22,9 +23,10 @@ public class JsonFlightRepository : IFlightRepository
 
 	private List<Flight> _flights = [];
 
-	public JsonFlightRepository(IMapper mapper)
+	public JsonFlightRepository(IMapper mapper, ILogger<JsonFlightRepository> logger)
 	{
 		_mapper = mapper;
+		_logger = logger;
 
 		Load();
 	}
@@ -33,23 +35,39 @@ public class JsonFlightRepository : IFlightRepository
 	{
 		lock (FileLock)
 		{
-			if (File.Exists(FlightsPath))
+			try
 			{
-				var json = File.ReadAllText(FlightsPath);
-				_flights = JsonSerializer.Deserialize<List<Flight>>(json, Options) ?? [];
+				if (File.Exists(FlightsPath))
+				{
+					var json = File.ReadAllText(FlightsPath);
+					_flights = JsonSerializer.Deserialize<List<Flight>>(json, Options) ?? [];
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "An error occurred while loading the flights file: {Path}", FlightsPath);
+				_flights = [];
 			}
 		}
 	}
 
 	public void Save()
 	{
-		var json = JsonSerializer.Serialize(_flights, Options);
-
-		lock (FileLock)
+		try
 		{
-			using var stream = new FileStream(FlightsPath, FileMode.Create, FileAccess.Write, FileShare.Read);
-			using var writer = new StreamWriter(stream);
-			writer.Write(json);
+			var json = JsonSerializer.Serialize(_flights, Options);
+
+			lock (FileLock)
+			{
+				using var stream = new FileStream(FlightsPath, FileMode.Create, FileAccess.Write, FileShare.Read);
+				using var writer = new StreamWriter(stream);
+				writer.Write(json);
+			}
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "An error occurred while saving the flights file: {Path}", FlightsPath);
+			throw new IOException("Failed to save flight data.", ex);
 		}
 	}
 

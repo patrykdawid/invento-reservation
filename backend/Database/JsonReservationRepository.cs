@@ -13,6 +13,7 @@ public class JsonReservationRepository : IReservationRepository
 
 	private readonly IMapper _mapper;
 	private readonly IFlightRepository _flightRepo;
+	private readonly ILogger<JsonReservationRepository> _logger;
 
 	private static readonly JsonSerializerOptions Options = new()
 	{
@@ -23,10 +24,11 @@ public class JsonReservationRepository : IReservationRepository
 
 	private List<Reservation> _reservations = [];
 
-	public JsonReservationRepository(IMapper mapper, IFlightRepository flightRepo)
+	public JsonReservationRepository(IMapper mapper, IFlightRepository flightRepo, ILogger<JsonReservationRepository> logger)
 	{
 		_mapper = mapper;
 		_flightRepo = flightRepo;
+		_logger = logger;
 
 		Load();
 		AttachFlights();
@@ -36,32 +38,42 @@ public class JsonReservationRepository : IReservationRepository
 	{
 		lock (FileLock)
 		{
-			if (File.Exists(ReservationsPath))
+			try
 			{
-				var json = File.ReadAllText(ReservationsPath);
-				_reservations = JsonSerializer.Deserialize<List<Reservation>>(json, Options) ?? [];
+				if (File.Exists(ReservationsPath))
+				{
+					var json = File.ReadAllText(ReservationsPath);
+					_reservations = JsonSerializer.Deserialize<List<Reservation>>(json, Options) ?? [];
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "An error occurred while loading the reservations file: {Path}", ReservationsPath);
+				_reservations = [];
 			}
 		}
 	}
 
 	public void Save()
 	{
-		foreach (var reservation in _reservations)
+		try
 		{
-			reservation.FlightId = reservation.Flight.Id;
-			reservation.Flight = null!;
+			var toSerialize = _mapper.Map<List<Reservation>>(_reservations);
+
+			var json = JsonSerializer.Serialize(toSerialize, Options);
+
+			lock (FileLock)
+			{
+				using var stream = new FileStream(ReservationsPath, FileMode.Create, FileAccess.Write, FileShare.Read);
+				using var writer = new StreamWriter(stream);
+				writer.Write(json);
+			}
 		}
-
-		var json = JsonSerializer.Serialize(_reservations, Options);
-
-		lock (FileLock)
+		catch (Exception ex)
 		{
-			using var stream = new FileStream(ReservationsPath, FileMode.Create, FileAccess.Write, FileShare.Read);
-			using var writer = new StreamWriter(stream);
-			writer.Write(json);
+			_logger.LogError(ex, "An error occurred while saving the reservations file: {Path}", ReservationsPath);
+			throw new IOException("Failed to save reservation data.", ex);
 		}
-
-		AttachFlights();
 	}
 
 	[ExcludeFromCodeCoverage]
