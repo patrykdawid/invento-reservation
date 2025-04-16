@@ -14,7 +14,7 @@ import { Flight } from '../model/flight.model';
   styleUrl: './flight-form.component.scss',
 })
 export class FlightFormComponent implements OnInit {
-  @Input() flight!: Flight;
+  @Input() flight?: Flight;
   @Output() saveFlight = new EventEmitter<Flight>();
 
   form!: FormGroup;
@@ -27,7 +27,7 @@ export class FlightFormComponent implements OnInit {
 
     this.form = this.fb.group(
       {
-        number: [{ value: this.flight?.number, disabled: true }],
+        number: [this.flight?.number, Validators.required],
         departureTime: [departureDate, Validators.required],
         arrivalTime: [arrivalDate, Validators.required],
       },
@@ -51,13 +51,13 @@ export class FlightFormComponent implements OnInit {
       return;
     }
 
-    const updatedFlight: Flight = {
-      id: this.flight.id,
-      number: this.flight.number,
-      departureTime: this.form.get('departureTime')?.value,
-      arrivalTime: this.form.get('arrivalTime')?.value,
+    const result: Flight = {
+      id: this.flight?.id,
+      number: this.form.get('number')!.value,
+      departureTime: this.form.get('departureTime')!.value,
+      arrivalTime: this.form.get('arrivalTime')!.value,
     };
 
-    this.saveFlight.emit(updatedFlight);
+    this.saveFlight.emit(result);
   }
 }

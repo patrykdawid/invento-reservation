@@ -60,7 +60,7 @@ export class TableComponent implements OnInit, OnDestroy {
   reservationForm!: ReservationFormComponent;
 
   flightDialog: boolean = false;
-  flightItem: Flight = undefined!;
+  flightItem?: Flight = undefined!;
 
   reservationDialog: boolean = false;
   reservationItem: Reservation | undefined = undefined!;
@@ -135,7 +135,7 @@ export class TableComponent implements OnInit, OnDestroy {
   }
 
   trackByFlight(index: number, item: Flight): string {
-    return item.id;
+    return item.id!;
   }
 
   trackByReservation(index: number, reservation: Reservation): string {
@@ -231,7 +231,7 @@ export class TableComponent implements OnInit, OnDestroy {
     return TICKET_CLASS_SEVERITY[+classValue as TicketClass] ?? 'secondary';
   }
 
-  showFlightDialog(flight: Flight) {
+  showFlightDialog(flight?: Flight) {
     this.flightItem = flight;
     this.flightDialog = true;
   }
@@ -241,26 +241,40 @@ export class TableComponent implements OnInit, OnDestroy {
     this.flightItem = undefined!;
   }
 
-  onFlightSaved(updatedFlight: Flight): void {
-    this.flightService.updateFlight(updatedFlight)
+  onFlightSaved(flight: Flight): void {
+    const isExisting = flight.id !== undefined && flight.id !== null;
+  
+    const request$: Observable<Flight> = isExisting
+    ? this.flightService.updateFlight(flight)
+    : this.flightService.createFlight(flight);
+
+    request$
       .pipe(takeUntil(this.destroyed$))
       .subscribe({
         next: (res) => {
-          this.updateFlightLocally(res);
-    
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Zapisano lot',
-            detail: `Numer: ${res.number}, Odlot: ${res.departureTime}, Przylot: ${res.arrivalTime}`
-          });
-    
+          if (isExisting) {
+            this.updateFlightLocally(res);
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Zaktualizowano lot',
+              detail: `Numer: ${res.number}`,
+            });
+          } else {
+            this.addFlightLocally(res);
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Dodano lot',
+              detail: `Numer: ${res.number}`,
+            });
+          }
+      
           this.flightDialog = false;
         },
         error: () => {
           this.messageService.add({
             severity: 'error',
             summary: 'Błąd',
-            detail: 'Nie udało się zaktualizować lotu'
+            detail: 'Nie udało się zapisać lotu'
           });
         }
       });
@@ -369,7 +383,7 @@ export class TableComponent implements OnInit, OnDestroy {
     flight.reservations = flight.reservations!.map(r =>
       r.id === reservation.id ? { ...reservation } : r
     );
-  }  
+  }
 
   private addReservationLocally(reservation: Reservation): void {
     const flight = this.flights.find(f => f.id === reservation.flightId);
@@ -382,9 +396,24 @@ export class TableComponent implements OnInit, OnDestroy {
     const flight = this.flights.find(f => f.id === updatedFlight.id);
     if (!flight) return;
   
-    // flight.number = updatedFlight.number; // Uncomment if you want to update the flight number
+    flight.number = updatedFlight.number;
     flight.departureTime = updatedFlight.departureTime;
     flight.arrivalTime = updatedFlight.arrivalTime;
+  }
+
+  private addFlightLocally(flight: Flight): void {
+    this.flights.push(flight);
+
+    const sortField = this.dt.sortField;
+    const sortOrder = this.dt.sortOrder;
+
+    if (sortField && sortOrder) {
+      this.sortTableData({
+        data: this.flights,
+        field: sortField,
+        order: sortOrder
+      });
+    }
   }
 
   private sortTableData(event: SortEvent) {

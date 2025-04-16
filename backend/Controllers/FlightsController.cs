@@ -58,6 +58,28 @@ public class FlightsController : ControllerBase
 		return Ok(dto);
 	}
 
+	[HttpPost]
+	[ProducesResponseType(typeof(FlightDto), StatusCodes.Status201Created)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	public async Task<IActionResult> Create([FromBody] FlightDto dto)
+	{
+		var (isValid, error) = ValidateDto(dto);
+		if (!isValid)
+			return error!;
+
+		var flight = _mapper.Map<Flight>(dto);
+		flight.Id = Guid.NewGuid();
+
+		_flights.Add(flight);
+		_flights.Save();
+
+		var resultDto = _mapper.Map<FlightDto>(flight);
+
+		await Task.CompletedTask;
+
+		return CreatedAtAction(nameof(GetById), new { id = flight.Id }, resultDto);
+	}
+
 	[HttpPut("{id}")]
 	[ProducesResponseType(typeof(FlightDto), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -80,5 +102,13 @@ public class FlightsController : ControllerBase
 		await Task.CompletedTask;
 
 		return Ok(resultDto);
+	}
+
+	private (bool IsValid, IActionResult? ErrorResult) ValidateDto(FlightDto dto)
+	{
+		//if (!Enum.IsDefined(typeof(TicketClass), dto.Class))
+		//	return (false, Problem("Invalid ticket class.", statusCode: StatusCodes.Status400BadRequest), null);
+
+		return (true, null);
 	}
 }

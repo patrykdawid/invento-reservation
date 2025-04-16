@@ -29,7 +29,7 @@
     >
         <ng-template #caption>
             <div class="table-caption-wrapper">
-                <!-- <p-button label="dodaj lot" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="" /> TODO: nie było wymagane, dorobić w drugiej wersji -->
+                <p-button label="dodaj lot" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="showFlightDialog()" />
                 <p-iconfield iconPosition="left">
                     <p-inputicon>
                         <i class="pi pi-search"></i>
@@ -215,7 +215,7 @@
 
 <p-dialog [(visible)]="flightDialog" [style]="{ width: '450px' }" header="Szczegóły lotu" [modal]="true">
     <ng-template #content>
-        <ng-container *ngIf="flightDialog && !!flightItem">
+        <ng-container *ngIf="flightDialog">
             <app-flight-form
                 [flight]="flightItem"
                 (saveFlight)="onFlightSaved($event)"

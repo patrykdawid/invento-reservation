@@ -9,6 +9,10 @@ import { Flight } from '../model/flight.model';
 export class FlightService {
   constructor(private http: HttpClient) {}
 
+  createFlight(flight: Flight): Observable<Flight> {
+      return this.http.post<Flight>('/api/flights', flight);
+  }
+
   updateFlight(flight: Flight): Observable<Flight> {
     return this.http.put<Flight>(`/api/flights/${flight.id}`, flight);
   }
