@@ -65,9 +65,9 @@ public class ReservationsController : ControllerBase
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	public async Task<IActionResult> Create([FromBody] ReservationDto dto)
 	{
-		var (isValid, error, flight) = ValidateDto(dto);
-		if (!isValid)
-			return error!;
+		var flight = _flights.Find(dto.FlightId);
+		if (flight == null)
+			return BadRequest("Flight not found.");
 
 		var reservation = _mapper.Map<Reservation>(dto);
 		reservation.Id = Guid.NewGuid();
@@ -93,9 +93,9 @@ public class ReservationsController : ControllerBase
 		if (existing == null)
 			return NotFound();
 
-		var (isValid, error, flight) = ValidateDto(dto);
-		if (!isValid)
-			return error!;
+		var flight = _flights.Find(dto.FlightId);
+		if (flight == null)
+			return BadRequest("Flight not found.");
 
 		_mapper.Map(dto, existing);
 		existing.Flight = flight!;
@@ -125,17 +125,5 @@ public class ReservationsController : ControllerBase
 		await Task.CompletedTask;
 
 		return NoContent();
-	}
-
-	private (bool IsValid, IActionResult? ErrorResult, Flight? Flight) ValidateDto(ReservationDto dto)
-	{
-		if (!Enum.IsDefined(typeof(TicketClass), dto.Class))
-			return (false, Problem("Invalid ticket class.", statusCode: StatusCodes.Status400BadRequest), null);
-
-		var flight = _flights.Find(dto.FlightId);
-		if (flight == null)
-			return (false, Problem("Flight not found.", statusCode: StatusCodes.Status400BadRequest), null);
-
-		return (true, null, flight);
 	}
 }
