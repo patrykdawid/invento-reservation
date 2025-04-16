@@ -55,11 +55,21 @@
                 <th style="width: 3rem" alignFrozen="left" pFrozenColumn></th>
                 <th>
                     <p-columnFilter
-                        type="text"
-                        matchMode="contains"
                         [field]="flightNumberKey"
-                        placeholder="Numer lotu zawiera"
+                        matchMode="contains"
+                        display="row"
+                        [showOperator]="false"
+                        [showMatchModes]="false"
                     >
+                        <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                            <input
+                                type="text"
+                                pInputText
+                                [ngModel]="value"
+                                (ngModelChange)="filter($event)"
+                                placeholder="Numer lotu zawiera"
+                            />
+                        </ng-template>
                     </p-columnFilter>
                 </th>
                 <th>
@@ -144,11 +154,22 @@
                             <tr>
                                 <th>
                                     <p-columnFilter
-                                        type="text"
-                                        matchMode="contains"
                                         [field]="reservationPassengerNameKey"
-                                        placeholder="Imię i nazwisko pasażera zawiera"
-                                    ></p-columnFilter>
+                                        matchMode="contains"
+                                        display="row"
+                                        [showOperator]="false"
+                                        [showMatchModes]="false"
+                                    >
+                                        <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                                            <input
+                                                type="text"
+                                                pInputText
+                                                [ngModel]="value"
+                                                (ngModelChange)="filter($event)"
+                                                placeholder="Imię i nazwisko pasażera zawiera"
+                                            />
+                                        </ng-template>
+                                    </p-columnFilter>
                                 </th>
                                 <th>
                                     <!-- <p-columnFilter
