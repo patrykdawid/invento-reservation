@@ -56,6 +56,7 @@ export class FlightFormComponent implements OnInit {
       number: this.form.get('number')!.value,
       departureTime: this.form.get('departureTime')!.value,
       arrivalTime: this.form.get('arrivalTime')!.value,
+      reservations: this.flight?.reservations ?? [],
     };
 
     this.saveFlight.emit(result);
