@@ -1,6 +1,7 @@
 ﻿using backend.Database;
 using backend.Models;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Logging.Abstractions;
 using System.Diagnostics;
 using Xunit.Abstractions;
 
@@ -22,8 +23,8 @@ public class JsonReservationRepositoryTests :
 		_output = output;
 
 		var mapper = TestHelper.CreateMapper();
-		_flights = new JsonFlightRepository(mapper);
-		_reservations = new JsonReservationRepository(mapper, _flights);
+		_flights = new JsonFlightRepository(mapper, NullLogger<JsonFlightRepository>.Instance);
+		_reservations = new JsonReservationRepository(mapper, _flights, NullLogger<JsonReservationRepository>.Instance);
 
 		_reservations.GetAll().ToList().ForEach(_reservations.Remove);
 		_reservations.Save();

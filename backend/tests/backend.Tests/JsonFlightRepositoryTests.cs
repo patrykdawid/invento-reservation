@@ -1,6 +1,7 @@
 ﻿using backend.Database;
 using backend.Models;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Logging.Abstractions;
 using System.Diagnostics;
 using Xunit.Abstractions;
 
@@ -21,7 +22,7 @@ public class JsonFlightRepositoryTests :
 		_output = output;
 
 		var mapper = TestHelper.CreateMapper();
-		_repo = new JsonFlightRepository(mapper);
+		_repo = new JsonFlightRepository(mapper, NullLogger<JsonFlightRepository>.Instance);
 
 		_repo.GetAll().ToList().ForEach(_repo.Remove);
 		_repo.Save();
