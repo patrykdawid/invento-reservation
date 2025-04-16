@@ -121,4 +121,9 @@ public class JsonFlightRepository : IFlightRepository
 
 		_mapper.Map(flight, existing);
 	}
+
+	public bool ExistsByNumberExcept(string number, Guid exceptId) =>
+		_flights.Any(f =>
+			f.Id != exceptId &&
+			f.Number.Equals(number, StringComparison.OrdinalIgnoreCase));
 }

@@ -9,7 +9,7 @@ public class FlightDtoValidator : AbstractValidator<FlightDto>
 		RuleFor(f => f.Number)
 			.NotEmpty()
 			.WithMessage("Flight number is required.")
-			.Must(number => !flightRepo.GetAll().Any(f => f.Number == number)) //TODO: optimization
+			.Must((f, number) => !flightRepo.ExistsByNumberExcept(number, f.Id))
 			.WithMessage("Flight number must be unique.");
 
 		RuleFor(f => f.DepartureTime)

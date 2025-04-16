@@ -19,13 +19,7 @@ public class ReservationDtoValidator : AbstractValidator<ReservationDto>
 			.WithMessage("Flight ID is required.");
 
 		RuleFor(r => r)
-			.Must(r =>
-			{
-				return !reservationRepo.GetAll() //TODO: optimization
-					.Any(x =>
-						x.FlightId == r.FlightId &&
-						x.PassengerName.ToLower() == r.PassengerName.ToLower());
-			})
+			.Must(r => !reservationRepo.ExistsByPassengerAndFlightExcept(r.PassengerName, r.FlightId, r.Id))
 			.WithMessage("Passenger already exists on this flight.");
 	}
 }

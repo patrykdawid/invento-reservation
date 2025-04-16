@@ -15,4 +15,6 @@ public interface IFlightRepository
 #if DEBUG
 	void Delete();
 #endif
+
+	bool ExistsByNumberExcept(string number, Guid exceptId);
 }

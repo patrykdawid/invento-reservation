@@ -132,6 +132,12 @@ public class JsonReservationRepository : IReservationRepository
 			?? throw new InvalidOperationException("Flight not found");
 	}
 
+	public bool ExistsByPassengerAndFlightExcept(string passengerName, Guid flightId, Guid exceptId) =>
+		_reservations.Any(r =>
+			r.Id != exceptId &&
+			r.FlightId == flightId &&
+			r.PassengerName.Equals(passengerName, StringComparison.OrdinalIgnoreCase));
+
 	private void AttachFlights()
 	{
 		foreach (var reservation in _reservations)

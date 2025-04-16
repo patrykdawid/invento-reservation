@@ -15,4 +15,6 @@ public interface IReservationRepository
 #if DEBUG
 	void Delete();
 #endif
+
+	bool ExistsByPassengerAndFlightExcept(string passengerName, Guid flightId, Guid exceptId);
 }
