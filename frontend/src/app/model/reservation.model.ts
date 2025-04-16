@@ -6,8 +6,8 @@ export interface Reservation {
 }
 
 export enum TicketClass {
-    Economy = 0,
-    Business = 1,
+    Economy = 'Economy',
+    Business = 'Business'
 }
 
 export const TICKET_CLASS_LABELS: Record<TicketClass, string> = {

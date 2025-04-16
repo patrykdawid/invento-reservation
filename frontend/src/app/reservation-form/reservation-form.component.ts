@@ -4,18 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
-
-export enum TicketClass {
-  Economy = 0,
-  Business = 1
-}
-
-export interface Reservation {
-  id: string;
-  flightId: string;
-  passengerName: string;
-  class: TicketClass;
-}
+import { Reservation, TicketClass } from '../model/reservation.model';
 
 @Component({
   selector: 'app-reservation-form',

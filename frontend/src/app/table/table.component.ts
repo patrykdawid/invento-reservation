@@ -92,8 +92,8 @@ export class TableComponent implements OnInit, OnDestroy {
   defaultDateFilterMatchMode: string = this.dateMatchModes[0].value;
 
   ticketClassOptions = [
-    { label: 'Ekonomiczna', value: 0 },
-    { label: 'Biznesowa', value: 1 }
+    { label: 'Ekonomiczna', value: TicketClass.Economy },
+    { label: 'Biznesowa', value: TicketClass.Business }
   ];
 
   private destroyed$ = new Subject<void>();
@@ -223,12 +223,12 @@ export class TableComponent implements OnInit, OnDestroy {
     delete this.expandedRows[event.data[this.flightIdKey]];
   }
 
-  getTicketClassLabel(classValue: string | number): string {
-    return TICKET_CLASS_LABELS[+classValue as TicketClass] ?? 'Nieznana';
+  getTicketClassLabel(classValue: string): string {
+    return TICKET_CLASS_LABELS[classValue as TicketClass] ?? 'Nieznana';
   }
 
-  getTicketClassSeverity(classValue: string | number): 'info' | 'warn' | 'secondary' {
-    return TICKET_CLASS_SEVERITY[+classValue as TicketClass] ?? 'secondary';
+  getTicketClassSeverity(classValue: string): 'info' | 'warn' | 'secondary' {
+    return TICKET_CLASS_SEVERITY[classValue as TicketClass] ?? 'secondary';
   }
 
   showFlightDialog(flight?: Flight) {
