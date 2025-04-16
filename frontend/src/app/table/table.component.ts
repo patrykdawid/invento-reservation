@@ -270,12 +270,8 @@ export class TableComponent implements OnInit, OnDestroy {
       
           this.flightDialog = false;
         },
-        error: () => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Błąd',
-            detail: 'Nie udało się zapisać lotu'
-          });
+        error: err => {
+          this.handleServerValidationError(err);
         }
       });
   }
@@ -326,12 +322,8 @@ export class TableComponent implements OnInit, OnDestroy {
       
           this.reservationDialog = false;
         },
-        error: () => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Błąd',
-            detail: 'Nie udało się zapisać rezerwacji',
-          });
+        error: err => {
+          this.handleServerValidationError(err);
         }
       });
   }
@@ -356,13 +348,8 @@ export class TableComponent implements OnInit, OnDestroy {
                   });
 
                 },
-                error: () => {
-                  this.messageService.add({
-                      severity: 'error',
-                      summary: 'Błąd',
-                      detail: 'Nie można usunąć rezerwacji',
-                      life: 3000,
-                  });
+                error: err => {
+                  this.handleServerValidationError(err);
                 }
               });
           },
@@ -439,5 +426,31 @@ export class TableComponent implements OnInit, OnDestroy {
   
       return (v1! < v2! ? -1 : v1! > v2! ? 1 : 0) * order;
     });
+  }
+
+  private handleServerValidationError(error: any): void {
+    if (error.status === 400 && error.error?.errors) {
+      const messages = Object.values(error.error.errors).flat();
+  
+      for (const message of messages) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Validation error',
+          detail: message as string,
+        });
+      }
+    } else if (error.status === 500 && error.error?.detail?.includes('Error ID')) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Unexpected server error',
+        detail: `An unexpected error occurred. ${error.error.detail}`
+      });
+    } else {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Server error',
+        detail: 'Unexpected error occurred. Please try again later.'
+      });
+    }
   }
 }

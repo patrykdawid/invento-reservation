@@ -1,5 +1,7 @@
 using backend;
 using backend.Database;
+using FluentValidation.AspNetCore;
+using FluentValidation;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
@@ -16,6 +18,9 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 builder.Services.AddControllers()
 	.AddJsonOptions(options =>
